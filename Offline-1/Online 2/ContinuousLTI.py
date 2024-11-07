@@ -74,7 +74,6 @@ class ContinuousLTI:
         self.impulse_response = impulse_response
 
     def linear_combination_of_impulses(self,input_signal,delta):
-        # Implementation needed
         impulses = []
         coefficients = []
         

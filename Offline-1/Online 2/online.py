@@ -110,53 +110,23 @@ class DiscreteLTI:
         
         return output_signal
 def main():
-    impulse_response = DiscreteSignal(5)
-    impulse_response.set_value_at_time(0, 1)
-    impulse_response.set_value_at_time(1, 1)
-    impulse_response.set_value_at_time(2, 1)
 
-    output_dir = "discrete_signals"
-    os.makedirs(output_dir, exist_ok=True)
+    # Stock Market Prices as a Python List
+    # price_list = list(map(int, input("Stock Prices: ").split()))
+    # n = int(input("Window size: "))
+    # alpha = float(input("Alpha: "))
 
-    input_signal = DiscreteSignal(5)
-    lti = DiscreteLTI(impulse_response)
-    input_signal.set_value_at_time(0, 0.5)
-    input_signal.set_value_at_time(1, 2)
-    # Plot Input Signal
-    fig, ax = plt.subplots()  # Create another figure and axis
-    input_signal.plot(ax, "x[n]",-1,input_signal.values.max()+2, filepath=os.path.join(output_dir, "x[n].png"))  # Pass the axis to the plot method
-    
-    impulse = DiscreteSignal(5)
-    impulse.set_value_at_time(0,1)
+    # You may use the following input for testing purpose
+    price_list = [10,11,12,9,10,13,15,16,17,18]
+    n = 3
+    alpha = 0.8
 
-    totalplots = 2*input_signal.INF+2
-    rows = totalplots//3
-    fig, axes = plt.subplots(rows,totalplots//rows, figsize=(10, 10))
-    fig.suptitle("Impulses multiplied by coefficients", fontsize=14)
-    # impulse.plot(ax,"impulse")
-    for i, ax in enumerate(axes.flat[:-1]):
-        shifted_impulse = impulse.shift_signal(input_signal.INF - i)
-        to_plot = shifted_impulse.multiply_const_factor(input_signal.values[i])
-        title = rf'$\delta$[n - ({i - input_signal.INF})]x[{i - input_signal.INF}]'
-        to_plot.plot(ax, title,-1,input_signal.values.max()+2)
-    input_signal.plot(axes.flat[-1], "Sum")
-    
-    plt.tight_layout()
-    plt.savefig(os.path.join(output_dir, "impulse_multiplied_by_coeff.png"))
-    # plt.show()
-    
-    fig, ax = plt.subplots()  # Create a new figure and axis
-    
-    impulse_response.plot(ax, "h[n]",-1,input_signal.values.max()+2, filepath=os.path.join(output_dir, "h[n].png"))  # Pass the axis to the plot method
+    # Determine the values after performing Exponential Smoothing
+    # The length of exsm should be = len(price_list) - n + 1
+    exsm = []
 
-    
+    print("Exponential Smoothing: " + ", ".join(f"{num:.2f}" for num in exsm))
+    # Output should be: 11.68, 9.47, 9.82, 12.29, 14.40, 15.62, 16.64, 17.63
 
-    # Plot Output Signal
-    output_signal = lti.output(input_signal)
-    fig, ax = plt.subplots()  # Create another figure and axis
-    # fig, ax = plt.subplots()  # Create another figure and axis
-    # output_signal.plot(ax, "Output Signal",-1,input_signal.values.max()+2, filepath=os.path.join(output_dir, "output_signal.png"))  # Pass the axis to the plot method
-
-    # plt.show()  # Display all figures
 if __name__ == "__main__":
     main()
