@@ -160,13 +160,17 @@ def target_function(x, function_type="square"):
     
     elif function_type == "sawtooth":
         # Sawtooth wave: linearly increasing from -1 to 1 over the period
-        y = 2 * (x / (2 * np.pi) - np.floor(x / (2 * np.pi) + 0.5))
+        y = 2* (x/(np.pi)-np.floor(0.5+x/(np.pi))) ## double sawtooth
+        # y = 2* (x/(2*np.pi)-np.floor(0.5+x/(2*np.pi))) ## single sawtooth
         return y
         pass  # Implement this function
     
     elif function_type == "triangle":
         # Triangle wave: periodic line with slope +1 and -1 alternately
-        y = 2 * np.abs((x / np.pi) % 2 - 1) - 1
+        # y = -1* (2 * np.abs((x) % (2*np.pi) - np.pi) - np.pi) ## single triangle (lower)
+        # y = (2 * np.abs((x) % (2*np.pi) - np.pi) - np.pi) ## single triangle (upper)
+        # y = np.abs(1 * np.abs((x - np.pi/2) % (2*np.pi)-np.pi)-np.pi/2) ## double upper triangle (P=2pi, A=pi/2, with abs value)
+        y = (1 * np.abs((x- np.pi/2) % (2*np.pi)-np.pi)-np.pi/2) ## normal triangle (P=2pi, A=pi/2)
         return y
         pass  # Implement this function
     
