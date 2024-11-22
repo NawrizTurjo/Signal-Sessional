@@ -93,7 +93,7 @@ class FourierSeries:
         a0 = self.calculate_a0()
         
         # Initialize the series with the a0 term
-        series = a0 * np.ones_like(x)
+        series = (a0/2) * np.ones_like(x)
         
         # Compute each harmonic up to the specified number of terms
         for n in range(1, self.terms + 1):
@@ -169,8 +169,8 @@ def target_function(x, function_type="square"):
         # Triangle wave: periodic line with slope +1 and -1 alternately
         # y = -1* (2 * np.abs((x) % (2*np.pi) - np.pi) - np.pi) ## single triangle (lower)
         # y = (2 * np.abs((x) % (2*np.pi) - np.pi) - np.pi) ## single triangle (upper)
-        # y = np.abs(1 * np.abs((x - np.pi/2) % (2*np.pi)-np.pi)-np.pi/2) ## double upper triangle (P=2pi, A=pi/2, with abs value)
-        y = (1 * np.abs((x- np.pi/2) % (2*np.pi)-np.pi)-np.pi/2) ## normal triangle (P=2pi, A=pi/2)
+        y = np.abs(1 * np.abs((x - np.pi/2) % (2*np.pi)-np.pi)-np.pi/2) ## double upper triangle (P=2pi, A=pi/2, with abs value)
+        # y = (1 * np.abs((x- np.pi/2) % (2*np.pi)-np.pi)-np.pi/2) ## normal triangle (P=2pi, A=pi/2)
         return y
         pass  # Implement this function
     

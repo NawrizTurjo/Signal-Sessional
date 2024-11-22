@@ -17,7 +17,7 @@ plt.plot(time, data)
 plt.title("Original Audio Signal (Time Domain)")
 plt.xlabel("Time (s)")
 plt.ylabel("Amplitude")
-# plt.show()
+plt.show()
 
 # Set parameters for interval sampling and FT
 interval_step = 1  # Adjust for sampling every 'interval_step' data points  
@@ -59,7 +59,7 @@ plt.plot(frequencies, np.sqrt(ft_data[0]**2 + ft_data[1]**2))
 plt.title("Frequency Spectrum of the Audio Signal (Custom FT with Trapezoidal Integration)")
 plt.xlabel("Frequency (Hz)")
 plt.ylabel("Magnitude")
-# plt.show()
+plt.show()
 
 # Step 3: Filter out unwanted noise frequencies
 filtered_ft_data= np.zeros((2, num_freqs))
@@ -78,7 +78,7 @@ plt.plot(frequencies, np.sqrt(filtered_ft_data[0]**2 + filtered_ft_data[1]**2))
 plt.title("Filtered Frequency Spectrum (Unwanted Frequencies Removed)")
 plt.xlabel("Frequency (Hz)")
 plt.ylabel("Magnitude")
-# plt.show()
+plt.show()
 
 # Step 4: Apply Inverse Fourier Transform using trapezoidal integration
 def inverse_fourier_transform(ft_signal, frequencies, sampled_times):
@@ -106,7 +106,7 @@ plt.plot(sampled_times, filtered_data)
 plt.title("Reconstructed (Denoised) Audio Signal (Time Domain)")
 plt.xlabel("Time (s)")
 plt.ylabel("Amplitude")
-# plt.show()
+plt.show()
 
 # Step 5: Normalize and save the denoised audio
 filtered_data = np.int16(filtered_data / np.max(np.abs(filtered_data)) * 32767)  # Convert to int16 format for WAV
