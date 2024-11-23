@@ -9,6 +9,7 @@ data = data / np.max(np.abs(data))  # Normalize to -1 to 1
 # If stereo, convert to mono by averaging channels
 if len(data.shape) > 1:
     data = data.mean(axis=1)
+# print(sample_rate)
 
 # Step 1.1: Plot the original audio signal in the time domain
 plt.figure(figsize=(12, 4))
