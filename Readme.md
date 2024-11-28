@@ -7,3 +7,5 @@ The Folders contains respective resources for the offline tasks of this course s
 **[Offline 2](./Offline-2)**: Fourier Series
 
 **[Offline 3](./Offline-3)**: Fourier Transform
+
+**[Offline 4](./Offline-4)**: DFT and FFT
