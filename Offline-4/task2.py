@@ -5,9 +5,9 @@ import os
 
 save_folder = "task2_plots"
 os.makedirs(save_folder, exist_ok=True)
+saveToFolder = False
 
 def generate_random_signal(n):
-    """Generate a random discrete signal of length n."""
     return np.random.rand(n)
 
 def dft(signal):
@@ -27,95 +27,71 @@ def idft(X):
         signal.append(real / N)
     return signal
 
-# def fft(signal):
+## Complex form implementation
+# def dft(signal):
 #     N = len(signal)
-#     if N <= 1:
-#         return signal
-#     even = fft(signal[0::2])
-#     odd = fft(signal[1::2])
-#     T = [np.exp(-2j * np.pi * k / N) * odd[k] for k in range(N // 2)]
-#     return [even[k] + T[k] for k in range(N // 2)] + [even[k] - T[k] for k in range(N // 2)]
+#     dft_output = np.zeros(N, dtype=complex)
+#     for k in range(N):
+#         for n in range(N):
+#             dft_output[k] += signal[n] * np.exp(-2j * np.pi * k * n / N)
+#     return dft_output
 
-# def ifft(spectrum):
-#     N = len(spectrum)
-#     if N <= 1:
-#         return spectrum
-#     even = ifft(spectrum[0::2])
-#     odd = ifft(spectrum[1::2])
-#     T = [np.exp(2j * np.pi * k / N) * odd[k] for k in range(N // 2)]
-#     return [(even[k] + T[k]) / 2 for k in range(N // 2)] + [(even[k] - T[k]) / 2 for k in range(N // 2)]
+# def idft(signal_freq):
+#     N = len(signal_freq)
+#     idft_output = np.zeros(N, dtype=complex)
+#     for n in range(N):
+#         for k in range(N):
+#             idft_output[n] += signal_freq[k] * np.exp(2j * np.pi * k * n / N)
+#     return idft_output / N
 
 def fft(x):
-    """
-    Recursive implementation of the Fast Fourier Transform (FFT).
-    Input:  Array of complex numbers x (length N).
-    Output: Array of complex numbers representing the FFT of x.
-    """
+
     N = len(x)
     
-    # Step 1: Zero Padding (if necessary)
-    if N & (N - 1) != 0:  # Check if N is not a power of 2
-        next_power_of_2 = 1 << (N - 1).bit_length()  # Find the next power of 2
-        x = np.pad(x, (0, next_power_of_2 - N))  # Pad with zeros
+    if N & (N - 1) != 0:
+        next_power_of_2 = 1 << (N - 1).bit_length()
+        x = np.pad(x, (0, next_power_of_2 - N))
         N = next_power_of_2
 
-    # Step 2: Base Case
     if N == 1:
         return x
     
-    # Step 3: Divide the input array into even and odd indexed parts
-    even = fft(x[::2])  # FFT of even indices
-    odd = fft(x[1::2])  # FFT of odd indices
+    even = fft(x[::2])
+    odd = fft(x[1::2])
     
-    # Step 5: Prepare the result array
     result = np.zeros(N, dtype=complex)
     
-    # Step 6: Calculate the twiddle factors and combine the results
     for k in range(N // 2):
         twiddle_factor = np.exp(-2j * np.pi * k / N)
         result[k] = even[k] + twiddle_factor * odd[k]
         result[k + N // 2] = even[k] - twiddle_factor * odd[k]
-    
-    # Step 7: Return the combined result
+
     return result
 
 def ifft(x):
-    """
-    Recursive implementation of the Inverse Fast Fourier Transform (IFFT).
-    Input:  Array of complex numbers x (length N).
-    Output: Array of complex numbers representing the IFFT of x.
-    """
+
     N = len(x)
 
-    # Step 1: Zero Padding (if necessary)
-    if N & (N - 1) != 0:  # Check if N is not a power of 2
-        next_power_of_2 = 1 << (N - 1).bit_length()  # Find the next power of 2
-        x = np.pad(x, (0, next_power_of_2 - N))  # Pad with zeros
+    if N & (N - 1) != 0:
+        next_power_of_2 = 1 << (N - 1).bit_length() 
+        x = np.pad(x, (0, next_power_of_2 - N))
         N = next_power_of_2
 
-    # Step 2: Base Case
     if N == 1:
         return x
 
-    # Step 3: Divide the input array into even and odd indexed parts
-    even = ifft(x[::2])  # IFFT of even indices
-    odd = ifft(x[1::2])  # IFFT of odd indices
+    even = ifft(x[::2])
+    odd = ifft(x[1::2])
 
-    # Step 5: Prepare the result array
     result = np.zeros(N, dtype=complex)
 
-    # Step 6: Calculate the twiddle factors and combine the results
     for k in range(N // 2):
-        twiddle_factor = np.exp(2j * np.pi * k / N)  # Conjugate of FFT twiddle factor
+        twiddle_factor = np.exp(2j * np.pi * k / N) 
         result[k] = even[k] + twiddle_factor * odd[k]
         result[k + N // 2] = even[k] - twiddle_factor * odd[k]
 
-    # Step 7: Normalize by dividing by N
     return result / 2
 
-
-
-# Measure and Compare Runtime
 def measure_runtime(n_values):
     dft_times = []
     fft_times = []
@@ -127,7 +103,6 @@ def measure_runtime(n_values):
     for n in n_values:
         signal = generate_random_signal(n)
         
-        # Measure DFT Runtime
         dft_time = 0
         for _ in range(total_times):
             start = time.perf_counter()
@@ -135,7 +110,6 @@ def measure_runtime(n_values):
             dft_time += (time.perf_counter() - start)
         dft_times.append(dft_time / total_times)
         
-        # Measure IDFT Runtime
         idft_time = 0
         for _ in range(total_times):
             start = time.perf_counter()
@@ -143,7 +117,6 @@ def measure_runtime(n_values):
             idft_time += (time.perf_counter() - start)
         idft_times.append(idft_time / total_times)
 
-        # Measure FFT Runtime
         fft_time = 0
         for _ in range(total_times):
             start = time.perf_counter()
@@ -151,13 +124,13 @@ def measure_runtime(n_values):
             fft_time += (time.perf_counter() - start)
         fft_times.append(fft_time / total_times)
         
-        # Measure IFFT Runtime
         ifft_time = 0
         for _ in range(total_times):
             start = time.perf_counter()
             ifft_result = ifft(fft_result)
             ifft_time += (time.perf_counter() - start)
         ifft_times.append(ifft_time / total_times)
+        # plot_reconstructed_signals_vs_main(n_values, signal, [idft_result, ifft_result], title="Reconstructed Signals vs Main Signal")
 
     return dft_times, fft_times, idft_times, ifft_times
 
@@ -174,15 +147,33 @@ def plot_dft_fft(n_values, dft_times, fft_times,label1="DFT",label2="FFT"):
     plt.xticks(n_values, [f"$2^{{{int(log_n)}}}$" for log_n in log_n_values])
     plt.legend()
     plt.grid(True, which="both", linestyle="--", linewidth=0.5)
-    # plt.show()
-    plt.savefig(f"{save_folder}/{label1}_vs_{label2}.png")
-    plt.close()
+    if saveToFolder:
+        plt.savefig(f"{save_folder}/{label1}_vs_{label2}.png")
+        plt.close()
+    else:
+        plt.show()
+
+def plot_reconstructed_signals_vs_main(n_values, signal, reconstructed_signals, title):
+    plt.figure(figsize=(12, 6))
+    plt.plot(signal, label="Main Signal", marker='o', linestyle='-', color='blue')
+    for i, (n, reconstructed_signal) in enumerate(zip(n_values, reconstructed_signals)):
+        plt.plot(reconstructed_signal, label=f"Reconstructed Signal (n={n})", marker='o', linestyle='--', color=f'C{i % 10}')
+    plt.title(title)
+    plt.xlabel("Index")
+    plt.ylabel("Amplitude")
+    plt.legend()
+    plt.grid(True, which="both", linestyle="--", linewidth=0.5)
+    if saveToFolder:
+        plt.savefig(f"{save_folder}/reconstructed_signals_vs_main.png")
+        plt.close()
+    else:
+        plt.show()
 
 # Plot the results
-n_values = [k for k in range(1, 1000)]  # n = 4, 8, 16, ..., 1024
+n_values = [2**k for k in range(2, 12)]  # n = 4, 8, 16, ..., 1024
 dft_times, fft_times, idft_times, ifft_times = measure_runtime(n_values)
-print(dft_times)
-print(fft_times)
+# print(dft_times)
+# print(fft_times)
 plot_dft_fft(n_values, dft_times, fft_times)
 plot_dft_fft(n_values, idft_times, ifft_times,label1="IDFT",label2="IFFT")
 

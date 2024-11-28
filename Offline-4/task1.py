@@ -1,5 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import os
+
+save_folder = "task1_plots"
+os.makedirs(save_folder, exist_ok=True)
+saveToFolder = False
+
 n=50
 samples = np.arange(n) 
 sampling_rate=100
@@ -8,13 +14,14 @@ wave_velocity=8000
 
 
 #use this function to generate signal_A and signal_B with a random shift
-def generate_signals(frequency=5):
+def generate_signals(frequency=5, noise_freqs=[15, 30, 45], amplitudes=[0.5, 0.3, 0.1], 
+                     noise_freqs2=[10, 20, 40], amplitudes2=[0.3, 0.2, 0.1]):
 
-    noise_freqs = [15, 30, 45]  # Default noise frequencies in Hz
+    # noise_freqs = [15, 30, 45]  # Default noise frequencies in Hz
 
-    amplitudes = [0.5, 0.3, 0.1]  # Default noise amplitudes
-    noise_freqs2 = [10, 20, 40] 
-    amplitudes2 = [0.3, 0.2, 0.1]
+    # amplitudes = [0.5, 0.3, 0.1]  # Default noise amplitudes
+    # noise_freqs2 = [10, 20, 40] 
+    # amplitudes2 = [0.3, 0.2, 0.1]
     
      # Discrete sample indices
     dt = 1 / sampling_rate  # Sampling interval in seconds
@@ -39,7 +46,6 @@ def generate_signals(frequency=5):
     
     return signal_A, signal_B
 
-#implement other functions and logic
 
 def dft(signal):
     N = len(signal)
@@ -63,12 +69,10 @@ def cross_correlation_dft(signal_A, signal_B):
     dft_B = dft(signal_B)
     # conjugate_dft_B = [np.conj(b) for b in dft_B]
     
-    # Element-wise multiplication in frequency domain
     # cross_corr_freq = [a * b for a, b in zip(dft_A, conjugate_dft_B)]
     cross_corr_freq = dft_A * np.conj(dft_B)
     cross_corr_freq = dft_B * np.conj(dft_A)
     
-    # Inverse DFT to get the cross-correlation in time domain
     cross_corr_time = idft(cross_corr_freq)
     cross_corr_time = np.roll(cross_corr_time, len(cross_corr_time) // 2)
     return cross_corr_time
@@ -84,55 +88,40 @@ def estimate_distance(sample_lag, sampling_rate, wave_velocity):
     distance = time_delay * wave_velocity
     return distance
 
-# def plot_signals(signal_A, signal_B, cross_corr):
-#     plt.figure(figsize=(12, 8))
-
-#     # Plot Signal A and Signal B
-#     plt.subplot(3, 1, 1)
-#     plt.stem(signal_A, linefmt="b-", markerfmt="bo", basefmt=" ", label="Signal A")
-#     plt.stem(signal_B, linefmt="r-", markerfmt="ro", basefmt=" ", label="Signal B")
-#     plt.legend()
-#     plt.title("Discrete Signals A and B")
-#     plt.xlabel("Samples")
-#     plt.ylabel("Amplitude")
-
-#     # Plot magnitude spectrum of Signal A and B
-#     plt.subplot(3, 1, 2)
-#     plt.stem(np.abs(dft(signal_A)), linefmt="b-", markerfmt="bo", basefmt=" ", label="Magnitude Spectrum of A")
-#     plt.stem(np.abs(dft(signal_B)), linefmt="r-", markerfmt="ro", basefmt=" ", label="Magnitude Spectrum of B")
-#     plt.legend()
-#     plt.title("Magnitude Spectrum of Discrete Signals")
-#     plt.xlabel("Frequency (Sample index)")
-#     plt.ylabel("Amplitude")
-
-#     # Plot Cross-Correlation
-#     plt.subplot(3, 1, 3)
-#     plt.stem(cross_corr, linefmt="g-", markerfmt="go", basefmt=" ")
-#     plt.title("Cross-Correlation of Discrete Signals")
-#     plt.xlabel("Lag (Samples)")
-#     plt.ylabel("Correlation")
-
-#     plt.tight_layout()
-#     plt.show()
-
-def plot_single_signal(signal, title,color):
+def plot_single_signal(signal, title, color):
     plt.figure(figsize=(12, 4))
     plt.stem(signal, linefmt=f"{color}-", markerfmt=f"{color}o", basefmt=" ")
     plt.title(title)
     plt.xlabel("Samples")
     plt.ylabel("Amplitude")
-    plt.show()
+    if saveToFolder:
+        plt.savefig(f"{save_folder}/{title}.png")
+        plt.close()
+    else:
+        plt.show()
 
-def plot_cross_correlation_dft(cross_corr):
+def plot_cross_correlation_dft(cross_corr,label="Cross Correlation"):
     lags = np.arange(-n//2, n//2)
     plt.figure(figsize=(12, 4))
     plt.stem(lags, cross_corr, linefmt="g-", markerfmt="go", basefmt=" ")
-    plt.title("Cross-Correlation of Discrete Signals")
+    plt.title(f"{label}")
     plt.xlabel("Lag (Samples)")
     plt.ylabel("Correlation")
-    plt.show()
+    if saveToFolder:
+        plt.savefig(f"{save_folder}/{label}.png")
+        plt.close()
+    else:
+        plt.show()
 
+from scipy.signal import butter, lfilter
 
+# Low-pass filter
+def low_pass_filter(signal, cutoff=10, sampling_rate=100, order=4):
+    nyquist = 0.5 * sampling_rate
+    normal_cutoff = cutoff / nyquist
+    b, a = butter(order, normal_cutoff, btype='low', analog=False)
+    filtered_signal = lfilter(b, a, signal)
+    return filtered_signal
 
 
 def main():
@@ -161,6 +150,29 @@ def main():
     plot_single_signal(dft_signal_A, "DFT of Signal A","b")
     plot_single_signal(dft_signal_B, "DFT of Signal B","r")
     plot_cross_correlation_dft(cross_corr)
+
+    # New Signals for Testing
+    signal_A, noisy_signal_B = generate_signals(
+        noise_freqs=[15, 35, 50],
+        amplitudes=[0.6, 0.4, 0.2],
+        noise_freqs2=[12, 25, 45],
+        amplitudes2=[0.5, 0.3, 0.2]
+    )
+
+    # Apply low-pass filtering
+    filtered_signal_B = low_pass_filter(noisy_signal_B)
+    plot_single_signal(signal_A, "Signal A","b")
+    plot_single_signal(noisy_signal_B, "Noisy Signal B","r")
+    plot_single_signal(filtered_signal_B, "Filtered Signal B","g")
+
+    # Cross-correlation with noisy and filtered signals
+    cross_corr_noisy = cross_correlation_dft(signal_A, signal_B)
+    cross_corr_filtered = cross_correlation_dft(signal_A, filtered_signal_B)
+
+    # Plot cross-correlations
+    plot_cross_correlation_dft(cross_corr_noisy, label="Cross Correlation Noisy")
+    plot_cross_correlation_dft(cross_corr_filtered, label="Cross Correlation Filtered")
+
 
 if __name__ == "__main__":
     main()
