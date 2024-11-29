@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-save_folder = "task1_plots"
+save_folder = "task1_plots_v1_9"
 os.makedirs(save_folder, exist_ok=True)
 saveToFolder = False
 
@@ -23,7 +23,7 @@ def generate_signals(frequency=5, noise_freqs=[15, 30, 45], amplitudes=[0.5, 0.3
     # noise_freqs2 = [10, 20, 40] 
     # amplitudes2 = [0.3, 0.2, 0.1]
     
-     # Discrete sample indices
+    # Discrete sample indices
     dt = 1 / sampling_rate  # Sampling interval in seconds
     time = samples * dt  # Time points corresponding to each sample
 
@@ -31,16 +31,16 @@ def generate_signals(frequency=5, noise_freqs=[15, 30, 45], amplitudes=[0.5, 0.3
     original_signal = np.sin(2 * np.pi * frequency * time)
 
     # Adding noise
-    noise_for_sigal_A = sum(amplitude * np.sin(2 * np.pi * noise_freq * time)
+    noise_for_signal_A = sum(amplitude * np.sin(2 * np.pi * noise_freq * time)
                 for noise_freq, amplitude in zip(noise_freqs, amplitudes))
-    noise_for_sigal_B = sum(amplitude * np.sin(2 * np.pi * noise_freq * time)
+    noise_for_signal_B = sum(amplitude * np.sin(2 * np.pi * noise_freq * time)
                 for noise_freq, amplitude in zip(noise_freqs2, amplitudes2))
-    signal_A = original_signal + noise_for_sigal_A 
-    noisy_signal_B = signal_A + noise_for_sigal_B
+    signal_A = original_signal + noise_for_signal_A 
+    noisy_signal_B = signal_A + noise_for_signal_B
 
     # Applying random shift
     shift_samples = np.random.randint(-n // 2, n // 2)  # Random shift
-    shift_samples = 3
+    shift_samples = 9
     print(f"Shift Samples: {shift_samples}")
     signal_B = np.roll(noisy_signal_B, shift_samples)
     
@@ -67,9 +67,7 @@ def idft(X):
 def cross_correlation_dft(signal_A, signal_B):
     dft_A = dft(signal_A)
     dft_B = dft(signal_B)
-    # conjugate_dft_B = [np.conj(b) for b in dft_B]
     
-    # cross_corr_freq = [a * b for a, b in zip(dft_A, conjugate_dft_B)]
     cross_corr_freq = dft_A * np.conj(dft_B)
     cross_corr_freq = dft_B * np.conj(dft_A)
     
@@ -78,9 +76,8 @@ def cross_correlation_dft(signal_A, signal_B):
     return cross_corr_time
 
 def find_sample_lag(cross_corr):
-    lag_index = np.argmax(np.real(cross_corr))  # Use real part only
-    if lag_index > len(cross_corr) // 2:
-        lag_index -= len(cross_corr)
+    lag_index = np.argmax(np.real(cross_corr))
+    lag_index -= len(cross_corr)//2
     return lag_index
 
 def estimate_distance(sample_lag, sampling_rate, wave_velocity):
@@ -100,10 +97,10 @@ def plot_single_signal(signal, title, color):
     else:
         plt.show()
 
-def plot_cross_correlation_dft(cross_corr,label="Cross Correlation"):
+def plot_cross_correlation_dft(cross_corr,label="Cross Correlation",color="g"):
     lags = np.arange(-n//2, n//2)
     plt.figure(figsize=(12, 4))
-    plt.stem(lags, cross_corr, linefmt="g-", markerfmt="go", basefmt=" ")
+    plt.stem(lags, cross_corr, linefmt="g-", markerfmt=f"{color}o", basefmt=" ")
     plt.title(f"{label}")
     plt.xlabel("Lag (Samples)")
     plt.ylabel("Correlation")
@@ -113,37 +110,30 @@ def plot_cross_correlation_dft(cross_corr,label="Cross Correlation"):
     else:
         plt.show()
 
-from scipy.signal import butter, lfilter
+from scipy.signal import butter, filtfilt
 
 # Low-pass filter
 def low_pass_filter(signal, cutoff=10, sampling_rate=100, order=4):
     nyquist = 0.5 * sampling_rate
     normal_cutoff = cutoff / nyquist
     b, a = butter(order, normal_cutoff, btype='low', analog=False)
-    filtered_signal = lfilter(b, a, signal)
+    filtered_signal = filtfilt(b, a, signal)
     return filtered_signal
 
-
 def main():
-    # Generate signals
     signal_A, signal_B = generate_signals()
     dft_signal_A = np.abs(dft(signal_A))
     dft_signal_B = np.abs(dft(signal_B))
 
-    # Cross-correlation
     cross_corr = cross_correlation_dft(signal_A, signal_B)
 
-    # Find sample lag
     sample_lag = find_sample_lag(cross_corr)
 
-    # Estimate distance
     distance = estimate_distance(sample_lag, sampling_rate, wave_velocity)
 
-    # Print results
     print(f"Sample Lag: {sample_lag}")
     print(f"Estimated Distance: {distance:.2f} meters")
 
-    # Plot results
     # plot_signals(signal_A, signal_B, cross_corr)
     plot_single_signal(signal_A, "Signal A","b")
     plot_single_signal(signal_B, "Signal B","r")
@@ -151,27 +141,34 @@ def main():
     plot_single_signal(dft_signal_B, "DFT of Signal B","r")
     plot_cross_correlation_dft(cross_corr)
 
-    # New Signals for Testing
-    signal_A, noisy_signal_B = generate_signals(
-        noise_freqs=[15, 35, 50],
-        amplitudes=[0.6, 0.4, 0.2],
-        noise_freqs2=[12, 25, 45],
-        amplitudes2=[0.5, 0.3, 0.2]
-    )
+    # New Signals for testing purpose
+    # signal_A, noisy_signal_B = generate_signals(
+    #     noise_freqs=[15, 35, 50],
+    #     amplitudes=[0.6, 0.4, 0.2],
+    #     noise_freqs2=[12, 25, 45],
+    #     amplitudes2=[0.5, 0.3, 0.2]
+    # )
+    noisy_signal_B = signal_B
 
-    # Apply low-pass filtering
+    filtered_signal_A = low_pass_filter(signal_A)
     filtered_signal_B = low_pass_filter(noisy_signal_B)
-    plot_single_signal(signal_A, "Signal A","b")
-    plot_single_signal(noisy_signal_B, "Noisy Signal B","r")
-    plot_single_signal(filtered_signal_B, "Filtered Signal B","g")
+    plot_single_signal(filtered_signal_A, "Filtered Signal A","m")
+    # plot_single_signal(signal_A, "Filtered Signal A","b")
+    plot_single_signal(noisy_signal_B, "Noisy Signal B","k")
+    plot_single_signal(filtered_signal_B, "Filtered Signal B","k")
 
-    # Cross-correlation with noisy and filtered signals
     cross_corr_noisy = cross_correlation_dft(signal_A, signal_B)
     cross_corr_filtered = cross_correlation_dft(signal_A, filtered_signal_B)
+    cross_corr_both = cross_correlation_dft(filtered_signal_A, filtered_signal_B)
 
-    # Plot cross-correlations
-    plot_cross_correlation_dft(cross_corr_noisy, label="Cross Correlation Noisy")
-    plot_cross_correlation_dft(cross_corr_filtered, label="Cross Correlation Filtered")
+    sample_lag = find_sample_lag(cross_corr_filtered)
+    distance = estimate_distance(sample_lag, sampling_rate, wave_velocity)
+    print(f"Sample Lag (Filtered): {sample_lag}")
+    print(f"Estimated Distance (Filtered): {distance:.2f} meters")
+
+    plot_cross_correlation_dft(cross_corr_noisy, label="Cross Correlation Noisy",color="c")
+    plot_cross_correlation_dft(cross_corr_filtered, label="Cross Correlation Filtered",color="c")
+    plot_cross_correlation_dft(cross_corr_both, label="Cross Correlation Both",color="c")
 
 
 if __name__ == "__main__":
