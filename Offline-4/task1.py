@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-save_folder = "task1_plots_v1_9"
+save_folder = "task1_plots_v1_-10"
 os.makedirs(save_folder, exist_ok=True)
 saveToFolder = False
 
@@ -40,7 +40,7 @@ def generate_signals(frequency=5, noise_freqs=[15, 30, 45], amplitudes=[0.5, 0.3
 
     # Applying random shift
     shift_samples = np.random.randint(-n // 2, n // 2)  # Random shift
-    shift_samples = 9
+    shift_samples = 3
     print(f"Shift Samples: {shift_samples}")
     signal_B = np.roll(noisy_signal_B, shift_samples)
     
@@ -68,7 +68,7 @@ def cross_correlation_dft(signal_A, signal_B):
     dft_A = dft(signal_A)
     dft_B = dft(signal_B)
     
-    cross_corr_freq = dft_A * np.conj(dft_B)
+    # cross_corr_freq = dft_A * np.conj(dft_B)
     cross_corr_freq = dft_B * np.conj(dft_A)
     
     cross_corr_time = idft(cross_corr_freq)
@@ -86,7 +86,7 @@ def estimate_distance(sample_lag, sampling_rate, wave_velocity):
     return distance
 
 def plot_single_signal(signal, title, color):
-    plt.figure(figsize=(12, 4))
+    plt.figure(figsize=(8, 4))
     plt.stem(signal, linefmt=f"{color}-", markerfmt=f"{color}o", basefmt=" ")
     plt.title(title)
     plt.xlabel("Samples")
@@ -99,7 +99,7 @@ def plot_single_signal(signal, title, color):
 
 def plot_cross_correlation_dft(cross_corr,label="Cross Correlation",color="g"):
     lags = np.arange(-n//2, n//2)
-    plt.figure(figsize=(12, 4))
+    plt.figure(figsize=(8, 4))
     plt.stem(lags, cross_corr, linefmt="g-", markerfmt=f"{color}o", basefmt=" ")
     plt.title(f"{label}")
     plt.xlabel("Lag (Samples)")
@@ -110,15 +110,30 @@ def plot_cross_correlation_dft(cross_corr,label="Cross Correlation",color="g"):
     else:
         plt.show()
 
-from scipy.signal import butter, filtfilt
+# from scipy.signal import butter, filtfilt
 
-# Low-pass filter
-def low_pass_filter(signal, cutoff=10, sampling_rate=100, order=4):
-    nyquist = 0.5 * sampling_rate
-    normal_cutoff = cutoff / nyquist
-    b, a = butter(order, normal_cutoff, btype='low', analog=False)
-    filtered_signal = filtfilt(b, a, signal)
+# # Low-pass filter
+# def low_pass_filter(signal, cutoff=10, sampling_rate=sampling_rate, order=5):
+#     nyquist = 0.5 * sampling_rate
+#     normal_cutoff = cutoff / nyquist
+#     b, a = butter(order, normal_cutoff, btype='low', analog=False)
+#     filtered_signal = filtfilt(b, a, signal)
+#     return filtered_signal
+
+def manual_low_pass_filter(signal, cutoff=10, sampling_rate=100):
+    N = len(signal)
+    k = np.arange(N)
+    freqs = k*sampling_rate/N
+
+    dft_signal = dft(signal)
+    
+    filtered_dft_signal = dft_signal.copy()
+    filtered_dft_signal = np.where(freqs <= cutoff, dft_signal, 0)
+    
+    filtered_signal = idft(filtered_dft_signal)
+
     return filtered_signal
+
 
 def main():
     signal_A, signal_B = generate_signals()
@@ -141,17 +156,17 @@ def main():
     plot_single_signal(dft_signal_B, "DFT of Signal B","r")
     plot_cross_correlation_dft(cross_corr)
 
+    noisy_signal_B = signal_B
     # New Signals for testing purpose
-    # signal_A, noisy_signal_B = generate_signals(
+    # _, noisy_signal_B = generate_signals(
     #     noise_freqs=[15, 35, 50],
     #     amplitudes=[0.6, 0.4, 0.2],
     #     noise_freqs2=[12, 25, 45],
     #     amplitudes2=[0.5, 0.3, 0.2]
     # )
-    noisy_signal_B = signal_B
 
-    filtered_signal_A = low_pass_filter(signal_A)
-    filtered_signal_B = low_pass_filter(noisy_signal_B)
+    filtered_signal_A = manual_low_pass_filter(signal_A)
+    filtered_signal_B = manual_low_pass_filter(noisy_signal_B)
     plot_single_signal(filtered_signal_A, "Filtered Signal A","m")
     # plot_single_signal(signal_A, "Filtered Signal A","b")
     plot_single_signal(noisy_signal_B, "Noisy Signal B","k")
