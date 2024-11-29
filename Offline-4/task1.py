@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-save_folder = "task1_plots_v1_-10"
+save_folder = "task1_plots_v1_3"
 os.makedirs(save_folder, exist_ok=True)
 saveToFolder = False
 
@@ -98,6 +98,7 @@ def plot_single_signal(signal, title, color):
         plt.show()
 
 def plot_cross_correlation_dft(cross_corr,label="Cross Correlation",color="g"):
+    n = len(cross_corr)
     lags = np.arange(-n//2, n//2)
     plt.figure(figsize=(8, 4))
     plt.stem(lags, cross_corr, linefmt="g-", markerfmt=f"{color}o", basefmt=" ")
@@ -122,8 +123,13 @@ def plot_cross_correlation_dft(cross_corr,label="Cross Correlation",color="g"):
 
 def manual_low_pass_filter(signal, cutoff=10, sampling_rate=100):
     N = len(signal)
+    # N = 1 << (N - 1).bit_length()
     k = np.arange(N)
     freqs = k*sampling_rate/N
+    # nyquist = 0.5 * sampling_rate
+    # normal_cutoff = 0.1 * nyquist
+
+    cutoff = 10
 
     dft_signal = dft(signal)
     
@@ -149,7 +155,6 @@ def main():
     print(f"Sample Lag: {sample_lag}")
     print(f"Estimated Distance: {distance:.2f} meters")
 
-    # plot_signals(signal_A, signal_B, cross_corr)
     plot_single_signal(signal_A, "Signal A","b")
     plot_single_signal(signal_B, "Signal B","r")
     plot_single_signal(dft_signal_A, "DFT of Signal A","b")
@@ -167,8 +172,8 @@ def main():
 
     filtered_signal_A = manual_low_pass_filter(signal_A)
     filtered_signal_B = manual_low_pass_filter(noisy_signal_B)
+    
     plot_single_signal(filtered_signal_A, "Filtered Signal A","m")
-    # plot_single_signal(signal_A, "Filtered Signal A","b")
     plot_single_signal(noisy_signal_B, "Noisy Signal B","k")
     plot_single_signal(filtered_signal_B, "Filtered Signal B","k")
 
@@ -178,6 +183,7 @@ def main():
 
     sample_lag = find_sample_lag(cross_corr_filtered)
     distance = estimate_distance(sample_lag, sampling_rate, wave_velocity)
+
     print(f"Sample Lag (Filtered): {sample_lag}")
     print(f"Estimated Distance (Filtered): {distance:.2f} meters")
 
