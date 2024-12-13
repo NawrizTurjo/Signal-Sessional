@@ -20,8 +20,8 @@ def generate_signals(frequency=5, noise_freqs=[15, 30, 45], amplitudes=[0.5, 0.3
     # noise_freqs = [15, 30, 45]  # Default noise frequencies in Hz
 
     # amplitudes = [0.5, 0.3, 0.1]  # Default noise amplitudes
-    # noise_freqs2 = [10, 20, 40] 
-    # amplitudes2 = [0.3, 0.2, 0.1]
+    noise_freqs2 = [15, 30, 45] 
+    amplitudes2 = [-1, -0.5, -0.2]
     
     # Discrete sample indices
     dt = 1 / sampling_rate  # Sampling interval in seconds
@@ -40,7 +40,7 @@ def generate_signals(frequency=5, noise_freqs=[15, 30, 45], amplitudes=[0.5, 0.3
 
     # Applying random shift
     shift_samples = np.random.randint(-n // 2, n // 2)  # Random shift
-    shift_samples = 3
+    shift_samples = 23
     print(f"Shift Samples: {shift_samples}")
     signal_B = np.roll(noisy_signal_B, shift_samples)
     
@@ -129,7 +129,7 @@ def manual_low_pass_filter(signal, cutoff=10, sampling_rate=100):
     # nyquist = 0.5 * sampling_rate
     # normal_cutoff = 0.1 * nyquist
 
-    cutoff = 10
+    cutoff = 5
 
     dft_signal = dft(signal)
     

@@ -92,13 +92,14 @@ def ifft(x):
 
     return result / 2
 
+
 def measure_runtime(n_values):
     dft_times = []
     fft_times = []
     idft_times = []
     ifft_times = []
 
-    total_times = 1
+    total_times = 2
 
     for n in n_values:
         signal = generate_random_signal(n)
